@@ -7,20 +7,6 @@ var MASK = parseInt('7777', 8)
 // Divide this number to get high 32 bit (JS unsafe)
 var DIVIDEND_HIGH_32BIT = Math.pow(2, 32)
 
-var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || (Math.pow(2, 53) - 1)
-
-// isInteger polyfill
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
-var isInteger = Number.isInteger || function (value) {
-  return typeof value === 'number' && isFinite(value) && Math.floor(value) === value
-}
-
-// isSafeInteger polyfill
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger
-var isSafeInteger = Number.isSafeInteger || function (value) {
-  return isInteger(value) && Math.abs(value) <= MAX_SAFE_INTEGER
-}
-
 var getUnisgnedHigh32 = function (val) {
   return (val / DIVIDEND_HIGH_32BIT) >>> 0
 }
@@ -31,8 +17,8 @@ var getUnsignedLow32 = function (val) {
 
 // If there's 64 bit:
 // MAX_SAFE_INT64 = (MAX_SAFE_HIGH_INT32 << 32) | MAX_SAFE_LOW_UINT32
-var MAX_SAFE_HIGH_INT32 = getUnisgnedHigh32(MAX_SAFE_INTEGER)
-var MAX_SAFE_LOW_UINT32 = getUnsignedLow32(MAX_SAFE_INTEGER)
+var MAX_SAFE_HIGH_INT32 = getUnisgnedHigh32(Number.MAX_SAFE_INTEGER)
+var MAX_SAFE_LOW_UINT32 = getUnsignedLow32(Number.MAX_SAFE_INTEGER)
 
 // Max individual file size
 var MAX_OCT_SIZE = parseInt('77777777777', 8)
@@ -137,7 +123,7 @@ var writeEncodedSize = function (buf, offset, size, allowGnuExtension) {
   // Then try gnu extension if enabled and can fit (uint32_be(0x80000000) + int64_be(size))
   // Otherwise, use the old encodeOct routine.
   // See 7-zip source, 7z1805-src.7z/CPP/7zip/Archive/Tar/TarIn.cpp#ParseSize
-  if (size > MAX_OCT_SIZE && isSafeInteger(size) && allowGnuExtension) {
+  if (size > MAX_OCT_SIZE && Number.isSafeInteger(size) && allowGnuExtension) {
     // writeUIntBE == writeUInt32BE in node < v10.0.0
     // 0x80000000 GNU Extension Flag
     buf.writeUInt32BE(0x80000000, offset)
